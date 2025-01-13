@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime
 
 class Platform:
     """General Interface for Brokers and Exchanges subclasses to inherit."""
@@ -95,4 +96,41 @@ class Trading212(Platform):
         }
         return super().request("GET", "/api/v0/equity/history/orders", query)
 
-    
+    def paid_out_dividends(self, cursor : int = 0, ticker : str = None, limit : int = 50):
+        query = {
+            "cursor": cursor,
+            "ticker": ticker,
+            "limit": limit
+        }
+        return super().request("GET", "/api/v0/history/dividends", query)
+
+    def exports_list(self):
+        return super().request("GET", "/api/v0/history/exports")
+
+    def export_csv(self, 
+                    includeDividends : bool = True,
+                    includeInterest : bool = True,
+                    includeOrders : bool = True,
+                    includeTransactions : bool = True,
+                    timeFrom : datetime = datetime(1970, 1, 1, 0, 0, 0),
+                    timeTo : datetime = datetime.now()
+                    ):
+        payload = {
+            "dataIncluded" : {
+                "includeDividends": includeDividends,
+                "includeInterest": includeInterest,
+                "includeOrders": includeOrders,
+                "includeTransactions": includeTransactions
+            },
+            "timeFrom": timeFrom,
+            "timeTo": timeTo
+        }
+        return super().request("POST", "/api/v0/history/exports", payload)
+
+    def transaction_list(self, cursor : int = 0, ticker : str = None, limit : int = 50):
+        query = {
+            "cursor": cursor,
+            "ticker": ticker,
+            "limit": limit
+        }
+        return super().request("GET", "/api/v0/history/transactions", query)
