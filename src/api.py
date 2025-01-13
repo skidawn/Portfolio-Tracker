@@ -3,14 +3,11 @@ from datetime import datetime
 
 class Platform:
     """General Interface for Brokers and Exchanges subclasses to inherit."""
-    # These should be overwritten
-    api_key = None 
-    private_key = None # Only used by exchanges
     BASE_URL = None
 
-    def __init__(self, api_key : str = None, private_key : str = None):
+    def __init__(self, api_key : str, private_key : str = None):
         self.api_key = api_key
-        self.private_key = private_key
+        self.private_key = private_key # Only used by exchanges.
 
     def request(self, method : str, path : str, body : dict = None) -> dict:
         """
