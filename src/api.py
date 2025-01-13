@@ -5,15 +5,20 @@ class Platform:
     # These should be overwritten
     api_key = None 
     private_key = None # Only used by exchanges
-    base_url = None
+    BASE_URL = None
 
-    def request(self, method : str, path : str,) -> dict:
+    def __init__(self, api_key : str = None, private_key : str = None):
+        self.api_key = api_key
+        self.private_key = private_key
+
+    def request(self, method : str, path : str, body : dict = None) -> dict:
         """
         Make an API request to an endpoint and return the repsonse.
 
         Args:
             method (str): The action to be performed on data at the endpoint.
             path (str): Absolute url to the API's endpoint.
+            body (dict): Data to be sent alongside the request.
 
         Returns:
             dict: The response, None if error.
@@ -27,7 +32,10 @@ class Platform:
         try:
             response = {}
             if method == "GET":
-                requests.get(url, headers=headers)
+                response = requests.get(url, headers=headers, params=body)
+
+            elif method == "POST":
+                response = requests.post(url, json=body, headers=headers)
 
             else:
                 raise ValueError(f"'{method}' method is unknown.")
@@ -53,3 +61,38 @@ class Trading212(Platform):
     Website: https://app.trading212.com
     API Docs: https://t212public-api-docs.redoc.ly/#operation/accountCash
     """
+    BASE_URL = "https://live.trading212.com"
+
+    def generate_authorization_headers(self):
+        return {
+            "Content-Type": "application/json",
+            "Authorization": self.api_key
+        }
+
+    # Account Data
+    def fetch_account_cash(self):
+        return super().request("GET", "/api/v0/equity/account/cash")
+    
+    def fetch_account_metadata(self):
+        return super().request("GET", "/api/v0/equity/account/info")
+
+    # Personal Portfolio
+    def fetch_all_open_positions(self):
+        return super().request("GET", "/api/v0/equity/portfolio")
+
+    def search_for_a_specific_position_by_ticker(self, ticker : str):
+        return super().request("POST", "/api/v0/equity/portfolio/ticker", {"ticker": ticker})
+
+    def fetch_a_specific_position(self, ticker : str):
+        return super().request("GET", "/api/v0/equity/portfolio/" + ticker)
+
+    # Historical Items
+    def historical_order_data(self, cursor : int = 0, ticker : str = None, limit : int = 50):
+        query = {
+            "cursor": cursor,
+            "ticker": ticker,
+            "limit": limit
+        }
+        return super().request("GET", "/api/v0/equity/history/orders", query)
+
+    
