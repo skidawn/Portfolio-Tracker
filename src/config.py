@@ -1,23 +1,28 @@
 import configparser
 import os
+import json
 
-_root_dir = os.getcwd()
-_src_dir = os.path.join(_root_dir, "src")
-_local_dir = os.path.join(_src_dir, "local")
+_ROOT_DIR = os.getcwd()
+_SRC_DIR = os.path.join(_ROOT_DIR, "src")
+_LOCAL_DIR = os.path.join(_SRC_DIR, "local")
 
 def _make_local_dir() -> None:
     """Create the local folder. Ignore if already exists."""
-    os.makedirs(_local_dir, exist_ok=True)
+    os.makedirs(_LOCAL_DIR, exist_ok=True)
 
 class Ini:
     """Abstract interface for handling .ini files."""
     parser = configparser.ConfigParser()
-    INI_PATH = os.path.join(_local_dir, "keys.ini")
+    _INI_PATH = os.path.join(_LOCAL_DIR, "keys.ini")
 
-    def __init__(self):
+    def _make_ini_file(self):
+        """Create the .ini file. Ignore if already exists."""
         if not os.path.exists(self.INI_PATH):
             open(self.INI_PATH, "x")
         self.read()
+
+    def __init__(self):
+        self._make_ini_file()
 
     def read(self):
         """Read .ini file to memory."""
@@ -75,3 +80,16 @@ class Ini:
             bool: Whether an entry for the Platform exists.
         """
         return self.parser.has_section(platform)
+    
+class Json:
+    """Abstract interface for handling .json files."""
+    _JSON_DIR = os.path.join(_LOCAL_DIR, "portfolios")
+    
+    def _make_json_dir(self):
+        """Create a json directory"""
+        os.makedirs(self._JSON_DIR)
+
+    def __init__(self):
+        self._make_json_dir()
+
+
